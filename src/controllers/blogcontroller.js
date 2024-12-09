@@ -2,11 +2,42 @@
   import mongoose from "mongoose";
   import Blog from "../models/blogcontent.js"
   import jwt from "jsonwebtoken"
+  import { v2 as cloudinary} from "cloudinary"
+  import fs from "fs"
+  
+  
+ // Configuration
+ cloudinary.config({ 
+    cloud_name: 'dlvklue5t', 
+    api_key: '437589555533986', 
+    api_secret: 'pLmCAlttNk-YV2BHgb4aNENZH_M' // Click 'View API Keys' above to copy your API secret
+  });
+  // upload image
+  const imageuploadtocloudinary = async (localpath) =>{
+    try {
+      const uploadResult = await cloudinary.uploader
+      .upload(
+          localpath, {
+             resource_type : "auto"
+          }
+      ) 
+      fs.unlinkSync(localpath);
+      return uploadResult.url
+    } catch (error) {
+      fs.unlinkSync(localpath)
+     return null
+    }
+  }
   
   
   //postblog
 
   const postBlog = async (req, res) => {
+
+    const {title,description,category,authorName,tags}= req.body;
+
+    if(!title || !description || !category || !authorName)
+        return res.send({message:"All feild required"})
 
     const refreshToken = req.cookies.refreshToken;
 
@@ -16,11 +47,16 @@
 
     const decoded =  jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET); 
     if(!decoded) return res.json({message :  "token unverify"})
-        console.log(decoded.email);
-        
+
+    const blogImageURL = await imageuploadtocloudinary(req.file.path);
 
     const newBlog = await Blog.create({
-     ...req.body,
+     title,
+     description,
+     category,
+     authorName,
+     tags,
+     image : blogImageURL ,
      author : decoded.email
     });
 
