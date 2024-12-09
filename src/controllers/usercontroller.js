@@ -1,7 +1,9 @@
 import User from "../models/bloguser.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-import Blog from "../models/blogcontent.js";
+import { v2 as cloudinary} from "cloudinary"
+import fs from "fs"
+
 
 
 const generateAccessToken = (user) =>{ 
@@ -11,28 +13,69 @@ const generateRefreshToken = (user) =>{
     return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET , {expiresIn: '7d'});
 }
 
+ // Configuration
+ cloudinary.config({ 
+  cloud_name: 'dlvklue5t', 
+  api_key: '437589555533986', 
+  api_secret: 'pLmCAlttNk-YV2BHgb4aNENZH_M' // Click 'View API Keys' above to copy your API secret
+});
+// upload image
+const imageuploadtocloudinary = async (localpath) =>{
+  try {
+    const uploadResult = await cloudinary.uploader
+    .upload(
+        localpath, {
+           resource_type : "auto"
+        }
+    ) 
+    fs.unlinkSync(localpath);
+    return uploadResult.url
+  } catch (error) {
+    fs.unlinkSync(localpath)
+   return null
+  }
+}
+
 // Register user
 
-const registeruser = async (req,res) => {
+const registeruser = async (req, res) => {
+  try {
+    const { email, password, username } = req.body;
 
-    const {email,password,username} = req.body;
+    // Validate required fields
+    if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!password) return res.status(400).json({ message: "Password is required" });
+    if (!username) return res.status(400).json({ message: "Username is required" });
+    if (!req.file) return res.status(400).json({ message: "User image is required" });
 
-   if(!email || !password || username)return res.json({mesaage:"All feaild is required"})
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(409).json({ message: "User already exists" });
 
-   const user = await User.findOne({email : email})
+    // Upload image to Cloudinary
+    const userImageURL = await imageuploadtocloudinary(req.file.path);
+    if (!userImageURL) return res.status(500).json({ message: "Failed to upload user image" });
 
-   if(user) return res.status(401).json({message : "User already exists"})
-     const createuser = await User.create({
-    username,
-       email,
-       password
+    // Create hashed password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-})  
- res.json({
-    message : "User Register Successfully",
-    createuser
- })
- }
+    // Create new user
+    const newUser = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      user_image: userImageURL,
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: newUser,
+    });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
  // login user
 const loginUser = async (req,res) =>{

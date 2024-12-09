@@ -14,22 +14,22 @@ const blogContentSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['technology', 'health', 'lifestyle', 'business', 'medical', 'others'], // You can add more categories if needed
+      enum: ['technology', 'health', 'lifestyle', 'business', 'medical', 'others']
     },
     author: {
-      type: String, // Reference to User schema
+      type: String, 
       required: true,
     },
     authorName: {
-      type: String, // Storing the author's name directly
+      type: String, 
       required: true,
     },
     image: {
-      type: String, // This can store URL or file path for the blog image
+      type: String,
       required: false,
     },
     tags: {
-      type: [String], // Changed to an array of strings for multiple tags
+      type: [String], 
       required: false,
     },
   },

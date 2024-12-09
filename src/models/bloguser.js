@@ -18,11 +18,10 @@ const userSchema = new mongoose.Schema({
         required: [true ,"Password is required"],
         minlength: 6
     },
-    role: {
+    user_image:{
         type : String,
-        enum : ["user","admin"],
-        default : "user"
-    },    
+        required :true
+    }  
 }
 ,{timestamps : true}
 )

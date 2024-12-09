@@ -1,16 +1,20 @@
 import express from "express"
 import { loginUser, logout,  registeruser } from "../controllers/usercontroller.js"
-import { deleteblog, Editblog, getallblog, postBlog } from "../controllers/blogcontroller.js"
+import { deleteblog, Editblog, getallblog, getBlogsByUserId, getloginUserBlogs, postBlog } from "../controllers/blogcontroller.js"
+import { upload } from "../middleware/multer.js"
 
 const router = express.Router()
-
-router.post("/register",registeruser)
+//user api
+router.post("/register",upload.single("image"),registeruser)
 router.post("/login",loginUser)
-router.post("/logout",logout)
+router.get("/logout",logout)
+//blog api
 router.post("/postblog",postBlog)
-router.get("/allblog" , getallblog)
 router.post("/deleteblog/:id" , deleteblog)
 router.post("/editblog/:id" , Editblog)
+router.get("/allblog" , getallblog)
+router.get("/allblogofrandonuser",getBlogsByUserId)
+router.get("/allblogsofloginuser",getloginUserBlogs)
 
 
 
