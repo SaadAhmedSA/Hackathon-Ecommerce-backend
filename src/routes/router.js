@@ -9,7 +9,7 @@ router.post("/register",upload.single("image"),registeruser)
 router.post("/login",loginUser)
 router.get("/logout",logout)
 //blog api
-router.post("/postblog",postBlog)
+router.post("/postblog",upload.single("image"),postBlog)
 router.post("/deleteblog/:id" , deleteblog)
 router.post("/editblog/:id" , Editblog)
 router.get("/allblog" , getallblog)
