@@ -48,7 +48,7 @@
     const decoded =  jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET); 
     if(!decoded) return res.json({message :  "token unverify"})
 
-    const blogImageURL = await imageuploadtocloudinary(req.file.path);
+    // const blogImageURL = await imageuploadtocloudinary(req.file.path);
 
     const newBlog = await Blog.create({
      title,
@@ -56,7 +56,7 @@
      category,
      authorName,
      tags,
-     image : blogImageURL ,
+    //  image : blogImageURL ,
      author : decoded.email
     });
 
@@ -70,8 +70,12 @@
 };
 //getAllblog
 const getallblog = async (req,res) => {
+    
 
-    const All = await Blog.find({})
+   const page = req.query.page || 1
+   const limit = req.query.limit || 10
+   const skip = (page - 1) * limit
+    const All = await Blog.find({}).limit(limit).skip(skip)
     res.json({
         All
     })
