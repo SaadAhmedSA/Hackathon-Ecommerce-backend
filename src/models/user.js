@@ -1,4 +1,4 @@
-import mongoose, { model } from "mongoose";
+import mongoose from "mongoose";
 import bcrypt from "bcrypt"
 
 const userSchema = new mongoose.Schema({
@@ -18,10 +18,19 @@ const userSchema = new mongoose.Schema({
         required: [true ,"Password is required"],
         minlength: 6
     },
-    user_image:{
-        type : String,
-        required :true
-    }  
+   role:{
+     type:String,
+     enum:["admin","user"],
+     default:"user"
+   },
+   products:[{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "Product"
+}],
+   orders:[{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "orders"
+}]
 }
 ,{timestamps : true}
 )
