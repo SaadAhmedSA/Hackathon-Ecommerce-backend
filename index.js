@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Hello blogging app !");
+  res.send("Hello Ecommerce App!");
 });
  
 app.use("/api/v1", router)
