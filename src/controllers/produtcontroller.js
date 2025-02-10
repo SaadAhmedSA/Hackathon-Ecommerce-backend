@@ -33,106 +33,139 @@
   //Addproduct
 
   const Addproduct = async (req, res) => {
+try{
+    const {title,description,price,salePrice,brand,category,totalStock,image}= req.body;
 
-    const {name,description,price,user}= req.body;
-
-    if(!name || !description || !price || !user)
-        return res.send({message:"All feild required"})
-
-  if (!req.file) {
-    return res.status(400).json({ message: 'Image file is required' });
-  }
-let imageurl = null
-imageurl = await imageuploadtocloudinary(req.file.path)
+if(!title || !description || !price  || !brand|| !category || !totalStock ||!image){
+    return res.json({
+    success:false,
+    message:"All feild required"
+     })
+}
   
 
     const newproduct = await Product.create({
-     name,
-     description,
-     price,
-     user,
-     image : imageurl ,
+      image,
+      title,
+      description,
+      category,
+      brand,
+      price,
+      salePrice,
+      totalStock,
     });
-
-    if(!newproduct) return res.json({message : "error occured"})
-    const populatedProduct = await Product.findById(newproduct._id).populate('user', 'username email'); 
-
     res.status(201).json({
-      message: "product created successfully",
-      product: populatedProduct,
-    });
+      success :true,
+      message: "product added successfully",
+     data:newproduct
+    })
+  }catch(error){
+    res.json({
+   success:false,
+   message:"Error!!! occured"
+    })
+
+    }
   
 };
-//getAllblog
 const getall = async (req,res) => {
-    
-
-   const page = req.query.page || 1
-   const limit = req.query.limit || 10
-   const skip = (page - 1) * limit
-    const All = await Product.find({}).limit(limit).skip(skip).populate('user', 'username email').populate({
-        path: "orderitems", 
-        populate: {
-          path: "user product", 
-          select: "username email name description price",
-        },
-      })
-    res.json({
-        All
-    })
+try {
+  
+  const data = await Product.find({})
+  res.json({
+    success:true,
+      data
+  })
+} catch (error) {
+  res.json({
+    success:false,
+      message:"error occurd"
+  })
+  
+}
 }
 
 //deleteblog
 const Deleteproduct = async (req,res) => {
 
-      const { id } = req.params;
-   if(!mongoose.Types.ObjectId.isValid(id))
-    return res.json({message : "Not a vaild Id"})
-
-    const deleteproduct = await Product.findOneAndDelete(id)
-
-    if(!deleteproduct) return res.json({message:"Product not found"})
-
-        res.json({
-            message : "deleted successfully"
-        })
+   try {
+    const { id } = req.params;
    
+     const deleteproduct = await Product.findOneAndDelete(id)
+ 
+     if(!deleteproduct) return res.json({ success:false,message:"Product not found"})
+ 
+         res.json({
+          success:true,
+             message : "deleted successfully"
+         })
+    
+    
+   } catch (error) {
+    
+   }
 }
 //Editblog  
 const Editproduct = async (req,res) => {
+  try {
+    const { id } = req.params;
+    if(!mongoose.Types.ObjectId.isValid(id))
+     return res.json({message : "Not a vaild Id"})
+  
+  const edit = await Product.findByIdAndUpdate(
+     id,
+     req.body,
+     { new: true, runValidators: true } 
+   );
+  
+     if(!edit) return res.json({message:"product not found"})
+  
+         res.json({
+          success:true,
+             message : "edited successfully",
+             edit
+         })
+  } catch (error) {
+    res.json({
+      success:false,
+         message : "not successfully",
+         edit
+     })
+  }
+ 
+  
 
-   const { id } = req.params;
-   if(!mongoose.Types.ObjectId.isValid(id))
-    return res.json({message : "Not a vaild Id"})
-const {name,description,price} = req.body
-
-const edit = await Product.findByIdAndUpdate(
-    id,
-    { name, description, price },
-    { new: true, runValidators: true } 
-  ).populate('user', 'username email');
-
-    if(!edit) return res.json({message:"product not found"})
-
-        res.json({
-            message : "edited successfully",
-            edit
-        })
-   
 }
+const getfilterproduct = async (req,res) => {
+  try {
+    
+    const data = await Product.find({})
+    res.json({
+      success:true,
+        data
+    })
+  } catch (error) {
+    res.json({
+      success:false,
+        message:"error occurd"
+    })
+    
+  }
+  }
 const singleproduct = async(req,res)=>{
     const { id } = req.params;
     if(!mongoose.Types.ObjectId.isValid(id))
      return res.json({message : "Not a vaild Id"})
     
     // Find the product by ID
-    const product = await Product.findById(id).populate('user', 'username email');
-    if(!product) res.json({message : "Product Not Found"})
+    const data = await Product.findById(id)
+    if(!data) res.json({message : "Product Not Found"})
  
    res.json({
-    product
+    success :true,
+    data
    })
 }
   
   
-export {Addproduct,getall,Editproduct,Deleteproduct,singleproduct}
+export {Addproduct,getall,Editproduct,Deleteproduct,singleproduct,getfilterproduct}

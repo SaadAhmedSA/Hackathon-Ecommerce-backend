@@ -23,14 +23,7 @@ const userSchema = new mongoose.Schema({
      enum:["admin","user"],
      default:"user"
    },
-   products:[{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : "Product"
-}],
-   orders:[{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : "orders"
-}]
+ 
 }
 ,{timestamps : true}
 )

@@ -7,34 +7,13 @@ import fs from "fs"
 
 
 const generateAccessToken = (user) =>{ 
-    return jwt.sign({ email: user.email }, process.env.ACCESS_JWT_SECRET , {expiresIn: '6h'});
+    return jwt.sign({ email: user.email , role :user.role }, process.env.ACCESS_JWT_SECRET , {expiresIn: '6h'});
 }
 const generateRefreshToken = (user) =>{ 
-    return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET , {expiresIn: '7d'});
+    return jwt.sign({ id:user._id, email: user.email , role :user.role ,username :user.username}, process.env.REFRESH_JWT_SECRET , {expiresIn: '60m'});
 }
 
- // Configuration
- cloudinary.config({ 
-  cloud_name: 'dlvklue5t', 
-  api_key: '437589555533986', 
-  api_secret: 'pLmCAlttNk-YV2BHgb4aNENZH_M' // Click 'View API Keys' above to copy your API secret
-});
-// upload image
-const imageuploadtocloudinary = async (localpath) =>{
-  try {
-    const uploadResult = await cloudinary.uploader
-    .upload(
-        localpath, {
-           resource_type : "auto"
-        }
-    ) 
-    fs.unlinkSync(localpath);
-    return uploadResult.url
-  } catch (error) {
-    fs.unlinkSync(localpath)
-   return null
-  }
-}
+
 
 // Register user
 
@@ -43,14 +22,15 @@ const registeruser = async (req, res) => {
     const { email, password, username } = req.body;
 
     // Validate required fields
-    if (!email) return res.status(400).json({ message: "Email is required" });
-    if (!password) return res.status(400).json({ message: "Password is required" });
-    if (!username) return res.status(400).json({ message: "Username is required" });
+    if (!email) return res.status(400).json({success : false , message: "Email is required" });
+    if (!password) return res.status(400).json({success : false, message: "Password is required" });
+    if (!username) return res.status(400).json({success : false, message: "Username is required" });
  
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(409).json({ message: "User already exists" });
+    if (existingUser) return res.status(409).json({
+      success : false, message: "User already exists" });
 
 
     // Create new user
@@ -62,12 +42,14 @@ const registeruser = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "User registered successfully",
+      success : true,
+      message: "Register successfully",
       user: newUser,
     });
   } catch (error) {
     console.error("Error during registration:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({
+      success:false, message: "Internal server error" });
   }
 };
 
@@ -80,10 +62,10 @@ const loginUser = async (req,res) =>{
      if(!password)return res.json({mesaage:"password is required"})
 
      const user = await User.findOne({email})   
-     if(!user) return res.status(404).json({mesaage : "User not found"})
+     if(!user) return res.status(404).json({success:false, mesaage : "User not found ! Please Register first"})
       
       const validpassword = await bcrypt.compare(password,user.password)  
-     if(!validpassword) return res.status(400).json({message :"inncorrect password"}) 
+     if(!validpassword) return res.status(400).json({success:false,message :"inncorrect password"}) 
   //     //Token
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -91,10 +73,11 @@ const loginUser = async (req,res) =>{
   res.cookie("refreshToken", refreshToken, { http: true, secure: true });
 
   res.json({
-    message: "user loggedIn successfully",
+    success:true,
+    message: "login successfully",
     accessToken,
     refreshToken,
-    data: user,
+    user
   
   });  
 }
@@ -102,25 +85,42 @@ const loginUser = async (req,res) =>{
 const logout = async (req,res) => {
     res.clearCookie("refreshToken");
     res.send({
+      success:true,
      mesaage:"logout Successfully"
     })
  
  }
 // refresh tokrn
-const refreshtoken = async(req,res)=>{
-    const Token = req.cookies.refreshToken || req.body.refreshToken;
-    if(!Token) return res.send({message : "Token not found"})
+// const refreshtoken = async(req,res)=>{
+//     const Token = req.cookies.refreshToken || req.body.refreshToken;
+//     if(!Token) return res.send({message : "Token not found"})
   
-    const decoded = jwt.verify(Token, process.env.REFRESH_JWT_SECRET);
+//     const decoded = jwt.verify(Token, process.env.REFRESH_JWT_SECRET);
   
-     const user = await User.find({email : decoded.email}) 
+//      const user = await User.find({email : decoded.email}) 
      
-    if (!user) return res.status(404).json({ message: "invalid token" });
+//     if (!user) return res.status(404).json({ message: "invalid token" });
   
-    const generatedToken = generateAccessToken(user);
-    res.json({ message: "new access token generated", accesstoken: generatedToken,decoded });
+//     const generatedToken = generateAccessToken(user);
+//     res.json({ message: "new access token generated", accesstoken: generatedToken,decoded });
   
-  }
-
-
- export {registeruser,loginUser,logout}
+//   }
+const authchech =  async (req,res,next) => {
+  const Token = req.cookies.refreshToken || req.body.refreshToken;
+  if(!Token) return res.status(401).json({
+    success : false,
+    message : "Unauthorized user"})
+    
+  
+    try {
+      const decoded = jwt.verify(Token, process.env.REFRESH_JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch (error) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorised user!",
+      });
+    }
+    }
+ export {registeruser,loginUser,logout,authchech}

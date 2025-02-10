@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 
 const prouctSchema = new mongoose.Schema({
-    name: {
+    title: {
         type:String,
         required : true
     },
@@ -15,18 +15,27 @@ const prouctSchema = new mongoose.Schema({
         type : Number,
         required : true
     },
+    salePrice: {
+        type : Number,
+    },
     image: {
         type : String,
         required : true
     },
-    user: {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User"
+  
+    category: {
+        type : String,
+        required : true
     },
-    orderitems:[{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "Order"
-    }]
+    totalStock: {
+        type : Number,
+        required : true
+    },
+    brand: {
+        type : String,
+        required : true
+    },
+  
 }
 ,{timestamps:true}
 )
