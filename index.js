@@ -10,11 +10,22 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 const PORT = process.env.PORT || 5000
-
-app.use(cors({
-  origin:"https://zara-s-client.vercel.app",
-  credentials: true,               // Allow cookies or other credentials
-}));
+const allowedOrigins = [
+  "https://zara-s-client.vercel.app",
+  "http://localhost:3000", // For local development
+];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Important for cookies
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 
