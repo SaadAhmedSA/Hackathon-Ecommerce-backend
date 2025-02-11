@@ -10,7 +10,7 @@ const generateAccessToken = (user) =>{
     return jwt.sign({ email: user.email , role :user.role }, process.env.ACCESS_JWT_SECRET , {expiresIn: '6h'});
 }
 const generateRefreshToken = (user) =>{ 
-    return jwt.sign({ id:user._id, email: user.email , role :user.role ,username :user.username}, process.env.REFRESH_JWT_SECRET , {expiresIn: '60m'});
+    return jwt.sign({ id:user._id, email: user.email , role :user.role ,username :user.username}, process.env.REFRESH_JWT_SECRET , {expiresIn: '3d'});
 }
 
 
@@ -110,7 +110,7 @@ const logout = async (req,res) => {
   
 //   }
 const authchech =  async (req,res,next) => {
-  const Token = req.cookies.refreshToken || req.body.refreshToken;
+  const Token = req.cookies.token || req.body.token;
   if(!Token) return res.status(401).json({
     success : false,
     message : "Unauthorized user"})
