@@ -70,8 +70,13 @@ const loginUser = async (req,res) =>{
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
       // cookies
-  res.cookie("refreshToken", refreshToken, { http: true, secure: true });
-
+      res.cookie("token", refreshToken, {
+        domain: "https://zara-s-client.vercel.app/", // Only needed if different frontend/backend domains
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
   res.json({
     success:true,
     message: "login successfully",
