@@ -12,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000
 
 app.use(cors({
+  origin:"https://zara-s-client.vercel.app",
   credentials: true,               // Allow cookies or other credentials
 }));
 app.use(cookieParser());
