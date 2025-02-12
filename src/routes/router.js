@@ -5,7 +5,7 @@ import {Addproduct, Deleteproduct, Editproduct, getall, getfilterproduct, single
 import { addtocart, deletecart, editcart, getcartitem } from "../controllers/addtocart.js"
 import { Addaddress, Alladdress, Deleteaddrees, Editaddress } from "../controllers/addreescontrioller.js"
 import { addfeature, deletefeature, getfeature } from "../controllers/featurecontroller.js"
-
+import {createOrder,getAllOrdersByAdmin,getAllOrdersByUser,getOrderDetails, updateOrderStatus} from "../controllers/ordercontroller.js"
 const router = express.Router()
 //user api
 router.post("/register",registeruser)
@@ -45,5 +45,13 @@ router.delete("/deleteadd/:userId/:addressId",Deleteaddrees)
 router.post("/Addfeature" ,addfeature)
 router.get("/Allfeature",getfeature)
 router.delete("/deletefeature/:id",deletefeature)
+//order api
+
+
+router.post("/create", createOrder);
+router.get("/list/:userId", getAllOrdersByUser);
+router.get("/Allorder", getAllOrdersByAdmin);
+router.get("/details/:id", getOrderDetails);
+router.put("/updateorder/:id",updateOrderStatus)
 
 export default router
